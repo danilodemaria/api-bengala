@@ -1,9 +1,9 @@
 const Localizacao = require('../models/Localizacao');
 
-const criarLocalizacao = async (id_dispositivo, latitute, longitude) => {
+const criarLocalizacao = async (id_dispositivo, latitude, longitude) => {
   const localizacaoCriada = await Localizacao.create({
     id_dispositivo,
-    latitute,
+    latitude,
     longitude,
   });
   return localizacaoCriada;

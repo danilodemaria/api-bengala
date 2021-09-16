@@ -18,6 +18,9 @@ class Dispositivo extends Sequelize.Model {
           type: Sequelize.UUIDV4,
           unique: true,
         },
+        atualizado_em: {
+          type: Sequelize.DATE,
+        },
         criado_em: {
           type: Sequelize.DATE,
         },
@@ -31,6 +34,7 @@ class Dispositivo extends Sequelize.Model {
         freezeTableName: true,
         timestamps: true,
         createdAt: 'criado_em',
+        updatedAt: 'atualizado_em',
         sequelize,
         modelName: 'dispositivos',
       }

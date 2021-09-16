@@ -22,6 +22,9 @@ module.exports = {
         type: Sequelize.UUID,
         unique: true,
       },
+      atualizado_em: {
+        type: Sequelize.DATE,
+      },
       criado_em: {
         type: Sequelize.DATE,
       },

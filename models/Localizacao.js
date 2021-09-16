@@ -26,19 +26,23 @@ class Localizacao extends Sequelize.Model {
           type: Sequelize.UUIDV4,
           unique: true,
         },
+        atualizado_em: {
+          type: Sequelize.DATE,
+        },
         criado_em: {
           type: Sequelize.DATE,
         },
       },
       {
         hooks: {
-          beforeCreate: async (dispositivo) => {
-            dispositivo.uuid = uuidv4();
+          beforeCreate: async (localizacao) => {
+            localizacao.uuid = uuidv4();
           },
         },
         freezeTableName: true,
         timestamps: true,
         createdAt: 'criado_em',
+        updatedAt: 'atualizado_em',
         sequelize,
         modelName: 'localizacoes',
       }
