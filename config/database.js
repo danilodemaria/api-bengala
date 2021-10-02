@@ -1,8 +1,8 @@
 module.exports = {
   username: 'root',
-  password: '15bfc49318',
+  password: '12345',
   database: 'api-bengala',
   host: 'localhost',
-  port: 3307,
+  port: 3306,
   dialect: 'mysql',
 };
