@@ -3,6 +3,7 @@ const { Op } = require('sequelize');
 const {
   criarLocalizacao,
   buscarTodasLocalizacoesDispositivo,
+  deletaTodasLocalizacoesDispositivo
 } = require('../controllers/localizacao');
 const { buscarUmDispositivo } = require('../controllers/dispositivo');
 const router = express.Router();
@@ -62,5 +63,19 @@ router.get('/obstaculo/:latitude/:longitude', async (req, res, next) => {
     return res.status(500).send(error);
   }
 });
+
+router.delete('/obstaculo/:latitude/:longitude', async (req, res) => {
+  const { latitude, longitude } = req.params;
+  const { latitude1, longitude1, latitude2, longitude2} = calcularXeY(Number(latitude), Number(longitude));
+  try {
+    await deletaTodasLocalizacoesDispositivo({
+      latitude: { [Op.between]: [latitude1, latitude2 ]},
+      longitude: { [Op.between]: [longitude1, longitude2 ]},
+    });
+    return res.sendStatus(200);
+  } catch (error) {
+    return res.status(500).send(error);
+  }
+})
 
 module.exports = router;
