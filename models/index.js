@@ -2,7 +2,7 @@ const Sequelize = require('sequelize');
 const fs = require('fs');
 const path = require('path');
 const config = require('../config/database');
-
+const logger = require('../utils/logger');
 const readModels = (dirname, basename) => {
   const models = [];
   fs.readdirSync(dirname).forEach((file) => {
@@ -28,11 +28,13 @@ class Database {
   }
 
   init() {
+    logger.info('INICIALIZANDO BANCO DE DADOS');
     models
       .map((model) => model.init(this.sequelize))
       .map(
         (model) => model.associate && model.associate(this.sequelize.models)
       );
+    logger.info('BANCO DE DADOS ONLINE');
   }
 }
 
