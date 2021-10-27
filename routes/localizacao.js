@@ -1,7 +1,9 @@
 const express = require('express');
+const { Op } = require('sequelize');
 const {
   criarLocalizacao,
   buscarTodasLocalizacoesDispositivo,
+  deletaTodasLocalizacoesDispositivo
 } = require('../controllers/localizacao');
 const { buscarUmDispositivo } = require('../controllers/dispositivo');
 const router = express.Router();
@@ -46,20 +48,44 @@ router.post('/', async (req, res, next) => {
   }
 });
 
+const calcularXeY = (latitude, longitude) => {
+  const umMetroEmGrau = 0.000009;
+  const latitude1 = latitude - umMetroEmGrau;
+  const latitude2 = latitude + umMetroEmGrau;
+  const longitude1 = longitude - umMetroEmGrau;
+  const longitude2 = longitude + umMetroEmGrau;
+  return { latitude1, latitude2, longitude1, longitude2}
+}
+
 // rota GET para buscar através da localização informada, se existe um objeto próximo
 router.get('/obstaculo/:latitude/:longitude', async (req, res, next) => {
   console.log('chegoy');
   const { latitude, longitude } = req.params;
+  const { latitude1, longitude1, latitude2, longitude2} = calcularXeY(Number(latitude), Number(longitude));
   try {
-    const obstaculo = await buscarTodasLocalizacoesDispositivo({
-      latitude,
-      longitude,
+    const obstaculos = await buscarTodasLocalizacoesDispositivo({
+      latitude: { [Op.between]: [latitude1, latitude2 ]},
+      longitude: { [Op.between]: [longitude1, longitude2 ]},
     });
-    return res.status(200).send({ temObstaculo: obstaculo.length > 0 });
+    return res.status(200).send(obstaculos.length > 0);
   } catch (error) {
     logger.error(error);
     return res.status(500).send(error);
   }
 });
+
+router.delete('/obstaculo/:latitude/:longitude', async (req, res) => {
+  const { latitude, longitude } = req.params;
+  const { latitude1, longitude1, latitude2, longitude2} = calcularXeY(Number(latitude), Number(longitude));
+  try {
+    await deletaTodasLocalizacoesDispositivo({
+      latitude: { [Op.between]: [latitude1, latitude2 ]},
+      longitude: { [Op.between]: [longitude1, longitude2 ]},
+    });
+    return res.sendStatus(200);
+  } catch (error) {
+    return res.status(500).send(error);
+  }
+})
 
 module.exports = router;
