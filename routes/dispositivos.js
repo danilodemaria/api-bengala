@@ -11,6 +11,7 @@ router.get('/todos', async (req, res, next) => {
     const dispositivos = await buscarTodosDispositivos();
     return res.status(200).send(dispositivos);
   } catch (error) {
+    logger.error(error);
     return res.status(500).send(error);
   }
 });
@@ -24,6 +25,7 @@ router.post('/', async (req, res, next) => {
       .status(200)
       .send({ message: 'Dipositivo criado com sucesso!', dispositivoCriado });
   } catch (error) {
+    logger.error(error);
     return res.status(500).send(error);
   }
 });

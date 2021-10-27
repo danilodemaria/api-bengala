@@ -1,5 +1,5 @@
 const cors = require('cors');
-const whiteList = ['http://localhost:3000'];
+const whiteList = ['http://localhost:5000'];
 
 module.exports = cors({
   credentials: true,
