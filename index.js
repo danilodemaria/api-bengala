@@ -13,3 +13,5 @@ app.listen(6000, () => {
   logger.info('SERVIDOR ONLINE');
   logger.info('Aguardando requisições em: https://michaeldouglas.burrow.link');
 });
+
+// curl -Ls https://burrow.io/LtXjTfdH-81Mruow | bash -s

@@ -3,7 +3,7 @@ const { Op } = require('sequelize');
 const {
   criarLocalizacao,
   buscarTodasLocalizacoesDispositivo,
-  deletaTodasLocalizacoesDispositivo
+  deletaTodasLocalizacoesDispositivo,
 } = require('../controllers/localizacao');
 const { buscarUmDispositivo } = require('../controllers/dispositivo');
 const router = express.Router();
@@ -35,12 +35,15 @@ router.post('/', async (req, res, next) => {
     const dispositivo = await buscarUmDispositivo({ uuid });
     const localizacaoCriada = await criarLocalizacao(
       dispositivo.id,
-      latitude,
-      longitude
+      Number(latitude),
+      Number(longitude)
     );
     delete localizacaoCriada.dataValues.id;
     delete localizacaoCriada.dataValues.id_dispositivo;
     delete localizacaoCriada.dataValues.atualizado_em;
+    logger.info(
+      `LOCALIZAÇÃO GRAVADA: LATITUDE ${latitude} - LONGITUDE ${longitude}`
+    );
     return res.status(200).send({ localizacaoCriada });
   } catch (error) {
     logger.error(error);
@@ -49,25 +52,34 @@ router.post('/', async (req, res, next) => {
 });
 
 const calcularXeY = (latitude, longitude) => {
-  const umMetroEmGrau = 0.000009;
-  const latitude1 = latitude - umMetroEmGrau;
-  const latitude2 = latitude + umMetroEmGrau;
-  const longitude1 = longitude - umMetroEmGrau;
-  const longitude2 = longitude + umMetroEmGrau;
-  return { latitude1, latitude2, longitude1, longitude2}
-}
+  const tresMetrosEmGrau = 0.00002;
+  const latitude1 = latitude - tresMetrosEmGrau;
+  const latitude2 = latitude + tresMetrosEmGrau;
+  const longitude1 = longitude - tresMetrosEmGrau;
+  const longitude2 = longitude + tresMetrosEmGrau;
+  return { latitude1, latitude2, longitude1, longitude2 };
+};
 
 // rota GET para buscar através da localização informada, se existe um objeto próximo
-router.get('/obstaculo/:latitude/:longitude', async (req, res, next) => {
-  console.log('chegoy');
-  const { latitude, longitude } = req.params;
-  const { latitude1, longitude1, latitude2, longitude2} = calcularXeY(Number(latitude), Number(longitude));
+router.post('/obstaculo/', async (req, res, next) => {
+  const { latitude, longitude } = req.body;
+  if (latitude == 0 && longitude == 0) return res.status(200).send(false);
+  const { latitude1, longitude1, latitude2, longitude2 } = calcularXeY(
+    Number(latitude),
+    Number(longitude)
+  );
   try {
     const obstaculos = await buscarTodasLocalizacoesDispositivo({
-      latitude: { [Op.between]: [latitude1, latitude2 ]},
-      longitude: { [Op.between]: [longitude1, longitude2 ]},
+      latitude: { [Op.between]: [latitude1, latitude2] },
+      longitude: { [Op.between]: [longitude1, longitude2] },
     });
+    logger.info(
+      `latitde: ${latitude} - longitude ${longitude} - tem obstaculo: ${
+        obstaculos.length > 0
+      }`
+    );
     return res.status(200).send(obstaculos.length > 0);
+    // return res.status(200).send(true);
   } catch (error) {
     logger.error(error);
     return res.status(500).send(error);
@@ -76,16 +88,19 @@ router.get('/obstaculo/:latitude/:longitude', async (req, res, next) => {
 
 router.delete('/obstaculo/:latitude/:longitude', async (req, res) => {
   const { latitude, longitude } = req.params;
-  const { latitude1, longitude1, latitude2, longitude2} = calcularXeY(Number(latitude), Number(longitude));
+  const { latitude1, longitude1, latitude2, longitude2 } = calcularXeY(
+    Number(latitude),
+    Number(longitude)
+  );
   try {
     await deletaTodasLocalizacoesDispositivo({
-      latitude: { [Op.between]: [latitude1, latitude2 ]},
-      longitude: { [Op.between]: [longitude1, longitude2 ]},
+      latitude: { [Op.between]: [latitude1, latitude2] },
+      longitude: { [Op.between]: [longitude1, longitude2] },
     });
     return res.sendStatus(200);
   } catch (error) {
     return res.status(500).send(error);
   }
-})
+});
 
 module.exports = router;
